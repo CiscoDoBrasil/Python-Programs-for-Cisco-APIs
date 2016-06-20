@@ -1,0 +1,65 @@
+#!/usr/bin/python
+# -*- coding: cp1252 -*-
+import requests
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
+import time
+import csv
+import os, sys
+# Function to Send the SMS to the People on the smsusers.csv file
+def sendme( customerNames, numberToDials, alarmLocation ):
+    url = "https://api.tropo.com/1.0/sessions"
+    
+    querystring = {"action":"create","token":"644f66556f70456f61584a6c786d4e75524b626c52617771774e75746f4b516645436b5567616952466a4b6f"}
+#
+    str1 = '{\n  \"token\": \"644f66556f70456f61584a6c786d4e75524b626c52617771774e75746f4b516645436b5567616952466a4b6f\",\n'
+    str2 = '\"numberToDial\" :' +  numberToDials + ',\n'
+    str3 = '\"customerName\" : \" Detected Alarm\",\n  \"msg\" :  \" Please enter the '
+    str4 = alarmLocation + ' Spark Room for more details...\"\n}'
+    
+#    
+    payload = str1 + str2 + str3 + str4
+#    print payload
+#
+    headers = {
+        'content-type': "application/json",
+        'accept': "application/json",
+        'accept-language': "application/json",
+        'cache-control': "no-cache",
+        'postman-token': "e7ad2f37-1394-a2f8-2b88-91b9f3c0a8c2"
+        }
+
+    response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
+#   
+    return
+#
+with open('C:\Python27\smsusers.csv') as csvfile:
+    readCSV = csv.reader(csvfile, delimiter=',')
+    customerNames = []
+    numberToDials = []
+    numRows = 0
+    numSMS  = 0
+    count   = 0
+    for row in readCSV:
+        customerName = row[count]
+        print customerName
+        numberToDial = row[count + 1]
+        print numberToDial
+        customerNames.append(customerName)
+        numberToDials.append(numberToDial)
+        numRows = numRows + 1
+    csvfile.close()
+#
+# Read the Sensor Position to Send in the Message
+#
+file = open('C:\Python27\SensorLocation.txt', 'r+')
+alarmLocation = file.read()
+file.close()
+#
+# Aqui entra o codigo para mandar SMS
+#
+while numSMS < numRows:
+    sendme((customerNames[numSMS]),(numberToDials[numSMS]), (alarmLocation))
+    numSMS = numSMS + 1
+    
+

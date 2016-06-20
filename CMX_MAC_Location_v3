@@ -1,0 +1,62 @@
+#!/usr/bin/python
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
+import time
+import sys
+#
+while True:
+#
+# => Attention: Configuration Required!
+#
+    sensorMAC = '00:00:2a:01:00:09';                    #<= Insert the sensor MAC Address here
+#
+# =<
+    url = "https://msesandbox.cisco.com:443/api/contextaware/v1/location/history/clients/" + sensorMAC
+#
+    querystring = {"page":"1","pagesize":"1","sortBy":"lastLocatedTime:desc"}
+#
+    payload = "{ \"sensor\": {\r\n \"temperature\": [ \r\n { \"sensorid\": \"001\",\r\n  \"sesnortime\": \"20/05/2016:10:20:30\",\r\n \"sensorvalue\": \"30\"\r\n }\r\n    ]\r\n  }\r\n}\r\n \r\n"
+    headers = {
+    'accept': "application/json",
+    'authorization': "Basic bGVhcm5pbmc6bGVhcm5pbmc=",
+    'cache-control': "no-cache",
+    'postman-token': "f3910892-7104-75df-02d8-3a638e79f72c"
+    }
+#
+    try:
+        response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
+#
+    except:
+        sensorLocation = "Sensor Search in CMX Failed"
+#
+    finally:
+        cmx_jason_output = response.text
+#
+# => Attention: Configuration Required!
+#
+        sensorPreLocation = 'mapHierarchyString":"';    #<= This is where the json begin variable starts
+        sensorPostLocation = '","floorRefId';           #<= This is where the json end variable starts
+# =<
+        sensorPreLocationLength = len (sensorPreLocation); # From what point should I consider the location begin
+#
+        if cmx_jason_output.find(sensorMAC) != -1:
+#    
+            locationBegin = int(cmx_jason_output.find(sensorPreLocation)) + sensorPreLocationLength
+            locationEnds  = int(cmx_jason_output.find(sensorPostLocation))
+            sensorLocation = cmx_jason_output[locationBegin:locationEnds]
+            print "The Sensor Location is: " + sensorLocation
+            file = open("SensorLocation.txt", "w")
+            file.write(sensorLocation)
+            file.close()
+            time.sleep(120)
+#    
+        else:
+#
+            sensorLocation = "Sensor Not in CMX"
+            print "The Sensor Location is: " + sensorLocation
+            file = open("SensorLocation.txt", "w")
+            file.write(sensorLocation)
+            file.close()
+            time.sleep(120)
+        
+
