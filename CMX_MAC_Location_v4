@@ -1,0 +1,61 @@
+#!/usr/bin/python
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
+import time
+import sys
+#
+while True:
+#
+    url = "http://10.97.20.218/api/location/v2/clients"
+#
+# => Attention: Configuration Required, change the macAddress to the sensor!
+
+    sensorMAC = "e8:b1:fc:d3:29:71"
+    
+# =< Attention: Configuration Required, change the macAddress to the sensor!
+#
+    sensorMACConstruct = '"' + sensorMAC + '"'
+    queryStringConstruct = "{" + ("'macAddress'" + ": " + "'" + sensorMAC + "'") + "}"
+    querystring = queryStringConstruct
+#    
+    headers = {
+        'accept': "application/json",
+        'authorization': "Basic amdvdXk6Y2lzY28xMjM=",
+        'cache-control': "no-cache",
+        'postman-token': "4d05002d-5da3-4c30-d119-3c7aa2d204f5"
+        }
+#
+    try:
+        response = requests.request("GET", url, headers=headers, params=querystring)
+#
+    except:
+        sensorLocation = "Sensor Search in CMX Failed"
+#
+    finally:
+        cmx_jason_output = response.text
+#
+        sensorPreLocation = 'mapHierarchyString":"';        #<= This is where the json begin variable starts
+        sensorPostLocation = '","floorRefId';               #<= This is where the json end variable starts
+        sensorPreLocationLength = len (sensorPreLocation);  # From what point should I consider the location begin
+#
+        if cmx_jason_output.find(sensorMACConstruct) != -1:
+#    
+            locationBegin = int(cmx_jason_output.find(sensorPreLocation)) + sensorPreLocationLength
+            locationEnds  = int(cmx_jason_output.find(sensorPostLocation))
+            sensorLocation = cmx_jason_output[locationBegin:locationEnds]
+            print "The Sensor Location is: " + sensorLocation
+            file = open("SensorLocation.txt", "w")
+            file.write(sensorLocation)
+            file.close()
+            time.sleep(120)
+#    
+        else:
+#
+            sensorLocation = "Sensor Not in CMX"
+            print "The Sensor Location is: " + sensorLocation
+            file = open("SensorLocation.txt", "w")
+            file.write(sensorLocation)
+            file.close()
+            time.sleep(120)
+        
+
